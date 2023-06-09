@@ -333,10 +333,14 @@ function parseGeometry(xml: Element): UrdfGeometry {
       return { geometryType: "sphere", radius };
     }
     case "mesh": {
-      const filename = child.getAttribute("filename") ?? undefined;
+      let filename = child.getAttribute("filename") ?? undefined;
       const scale = parseVec3Attribute(child, "scale");
       if (filename == undefined) {
         throw new Error(`missing attribute "filename" in ${xml}`);
+      }
+      const pkgPrefix = "package://";
+      if (filename.startsWith(pkgPrefix)) {
+          filename = document.location.origin + "/share/" + filename.substring(pkgPrefix.length);
       }
       return { geometryType: "mesh", filename, scale };
     }
