@@ -35,7 +35,8 @@ import {
 } from "@foxglove/studio-base/context/CurrentLayoutContext/actions";
 import { useLayoutManager } from "@foxglove/studio-base/context/LayoutManagerContext";
 import { useUserProfileStorage } from "@foxglove/studio-base/context/UserProfileStorageContext";
-import { defaultLayout } from "@foxglove/studio-base/providers/CurrentLayoutProvider/defaultLayout";
+// import { defaultLayout } from "@foxglove/studio-base/providers/CurrentLayoutProvider/defaultLayout";
+import { aivotLayout } from "@foxglove/studio-base/providers/CurrentLayoutProvider/aivotLayout";
 import panelsReducer from "@foxglove/studio-base/providers/CurrentLayoutProvider/reducers";
 import { AppEvent } from "@foxglove/studio-base/services/IAnalytics";
 import { LayoutManagerEventTypes } from "@foxglove/studio-base/services/ILayoutManager";
@@ -253,8 +254,8 @@ export default function CurrentLayoutProvider({
       await setSelectedLayoutId(currentLayoutId, { saveToProfile: false });
     } else {
       const newLayout = await layoutManager.saveNewLayout({
-        name: "Default",
-        data: defaultLayout,
+        name: "Aivot",
+        data: aivotLayout,
         permission: "CREATOR_WRITE",
       });
       await setSelectedLayoutId(newLayout.id);

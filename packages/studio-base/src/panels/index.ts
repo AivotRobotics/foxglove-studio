@@ -181,6 +181,13 @@ export const getBuiltin: (t: TFunction<"panels">) => PanelInfo[] = (t) => [
     module: async () => await import("./Tab"),
     hasCustomToolbar: true,
   },
+  {
+    title: t("aivotChatbot"),
+    type: "AivotChatbot",
+    description: t("aivotChatbotDescription"),
+    thumbnail: dataSourceInfoThumbnail,
+    module: async () => await import("./AivotChatbot"),
+  },
 ];
 
 export const getDebug: (t: TFunction<"panels">) => PanelInfo[] = (t) => [
