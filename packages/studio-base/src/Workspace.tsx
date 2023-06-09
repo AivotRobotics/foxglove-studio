@@ -711,7 +711,7 @@ export default function Workspace(props: WorkspaceProps): JSX.Element {
   const initialItem: undefined | DataSourceDialogItem =
     isPlayerPresent || !showOpenDialogOnStartup || showSignInForm ? undefined : "start";
 
-  const initialState: Pick<WorkspaceContextStore, "dialogs"> = {
+  const initialState: Pick<WorkspaceContextStore, "dialogs" | "sidebars"> = {
     dialogs: {
       dataSource: {
         activeDataSource: undefined,
@@ -721,6 +721,19 @@ export default function Workspace(props: WorkspaceProps): JSX.Element {
       preferences: {
         initialTab: undefined,
         open: false,
+      },
+    },
+    sidebars: {
+      legacy: { item: undefined },
+      left: {
+        item: undefined,
+        open: false,
+        size: undefined,
+      },
+      right: {
+        item: undefined,
+        open: false,
+        size: undefined
       },
     },
   };
