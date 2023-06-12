@@ -200,7 +200,7 @@ export class TopicMarkers extends Renderable<MarkerTopicUserData> {
       namespace.markersById.clear();
     };
 
-    if (ns.length === 0) {
+    if (ns.length === 0 || ns === "deleteAllMarkers") {
       // Delete all markers on this topic
       for (const namespace of this.namespaces.values()) {
         clearNamespace(namespace);
