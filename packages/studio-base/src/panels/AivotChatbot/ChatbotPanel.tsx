@@ -92,10 +92,9 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
         <Stack fullHeight>
             <PanelToolbar/>
             <Divider/>
-            <Stack fullHeight padding={2} gap={1} paddingBottom={2} flexShrink={0}>
+            <Stack flex="auto" padding={2} gap={1} paddingBottom={2} flexShrink={0}>
                 <Stack flex="4 1 auto">
                     <ChatMessagesList items={messages} />
-                    <Divider/>
                 </Stack>
                 <Stack flex="0 0 auto" alignItems="flex-end">
                     <OutlinedInput
@@ -103,7 +102,7 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
                         multiline
                         placeholder="Enter your prompt here"
                         value={prompt}
-                        disabled={!canCallServices && called}
+                        disabled={!canCallServices || called}
                         onChange={(event) => setPrompt(event.target.value)}
                         rows={8}
                         maxRows={8}
@@ -114,7 +113,7 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
                     <Button
                         variant="contained"
                         size="medium"
-                        disabled={!canCallServices && (called || prompt === "")}
+                        disabled={!canCallServices || (called || prompt === "")}
                         onClick={onSendClicked}
                     >
                         Send
@@ -122,6 +121,7 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
                     <Button
                         variant="contained"
                         size="medium"
+                        disabled={true}
                     >
                         Reset
                     </Button>
