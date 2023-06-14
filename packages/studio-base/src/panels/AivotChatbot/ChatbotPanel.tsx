@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
-import {useCallback, useState} from "react"
+import {useCallback, useEffect, useState} from "react"
 import Stack from "@foxglove/studio-base/components/Stack";
 import {AivotChatbotConfig, ChatMessageData, UserId} from "@foxglove/studio-base/panels/AivotChatbot/types";
 import {ChatMessagesList} from "@foxglove/studio-base/panels/AivotChatbot/ChatMessageList";
@@ -13,7 +13,6 @@ import {SaveConfig} from "@foxglove/studio-base/types/panels";
 import {useAivotChatbotSettings} from "@foxglove/studio-base/panels/AivotChatbot/settings";
 import {useMessagePipeline} from "@foxglove/studio-base/components/MessagePipeline";
 import {PlayerCapabilities} from "@foxglove/studio-base/players/types";
-import {ListSkillsRequest} from "@foxglove/studio-base/panels/AivotChatbot/messages"
 
 type Props = {
     config: AivotChatbotConfig,
@@ -50,14 +49,16 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
 
     useAivotChatbotSettings(config, saveConfig);
 
+    const mySuiteName = "RobotGpt";
+    const mySkillName = "Insane";
+
     const [prompt, setPrompt] = useState("");
     const [messages, setMessages] = useState<ChatMessageData[]>([]);
+    const [isInProgress, setInProgress] = useState(false);
 
     const addMessage = (user: UserId, message: string) => {
         setMessages(prevState => [ ... prevState, {userId: user, message: message}]);
     };
-
-    const [called, setCalled] = useState(false);
 
     const canCallServices = useMessagePipeline((context) =>
         context.playerState.capabilities.includes(PlayerCapabilities.callServices),
@@ -68,25 +69,55 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
         addMessage(UserId.HUMAN, prompt);
         setPrompt("");
 
-        const request : ListSkillsRequest = {
-            suiteName : "Evergreens"
-        };
-        setCalled(true);
-        callService(namespace + "/ListSkills", request)
+        setInProgress(true);
+        callService(namespace + "/AddInstruction", {
+            suiteName: mySuiteName,
+            skillName: mySkillName,
+            instructionText: prompt}
+        )
             .then((resp) => {
                 const record = resp as Record<string, unknown>;
                 const status = record["status"] as number;
-                const skills = record["skillNames"] as string[];
-                addMessage(UserId.ROBOT, `${status} : ${skills}`);
+                if (status != 0) {
+                    throw new Error(`Adding instruction failed with code: ${status}`);
+                }
             })
             .catch((reason) => {
                 addMessage(UserId.ROBOT, reason);
             })
             .finally(() => {
-                setCalled(false);
+                setInProgress(false);
             });
 
     }, [prompt]);
+
+    const onResetClicked = useCallback(() => {
+        setMessages([]);
+        setPrompt("");
+
+        setInProgress(true);
+        callService(namespace + "/SetupEnv", { envName: "Colored-Boxes"})
+            .then((resp) => {
+                const record = resp as Record<string, unknown>;
+                const status = record["status"] as number;
+                addMessage(UserId.ROBOT, `Environment reset status code ${status} `);
+
+                return callService(namespace + "/CreateSkill", { suiteName: "RobotGpt", skillName: "Insane" });
+            })
+            .catch((reason) => {
+                addMessage(UserId.ROBOT, reason);
+            })
+            .finally(() => {
+                setInProgress(false);
+            });
+
+    }, []);
+
+    useEffect(() => {
+        if (canCallServices) {
+            onResetClicked();
+        }
+    }, [canCallServices]);
 
     return (
         <Stack fullHeight>
@@ -100,9 +131,9 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
                     <OutlinedInput
                         className={classes.textarea}
                         multiline
-                        placeholder="Enter your prompt here"
+                        placeholder="Enter your instructions here"
                         value={prompt}
-                        disabled={!canCallServices || called}
+                        disabled={!canCallServices || isInProgress}
                         onChange={(event) => setPrompt(event.target.value)}
                         rows={8}
                         maxRows={8}
@@ -113,7 +144,7 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
                     <Button
                         variant="contained"
                         size="medium"
-                        disabled={!canCallServices || (called || prompt === "")}
+                        disabled={!canCallServices || (isInProgress || prompt === "")}
                         onClick={onSendClicked}
                     >
                         Send
@@ -121,7 +152,8 @@ export default function AivotChatbotPanel(props: Props): JSX.Element {
                     <Button
                         variant="contained"
                         size="medium"
-                        disabled={true}
+                        disabled={!canCallServices || isInProgress}
+                        onClick={onResetClicked}
                     >
                         Reset
                     </Button>
