@@ -341,6 +341,8 @@ function parseGeometry(xml: Element): UrdfGeometry {
       const pkgPrefix = "package://";
       if (filename.startsWith(pkgPrefix)) {
           filename = document.location.origin + "/share/" + filename.substring(pkgPrefix.length);
+          // below is for the local development only
+          // filename = "http://localhost:8086/share/" + filename.substring(pkgPrefix.length);
       }
       return { geometryType: "mesh", filename, scale };
     }
